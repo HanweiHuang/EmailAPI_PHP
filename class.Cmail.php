@@ -509,7 +509,7 @@ class Cmail{
                     $absolute_savepath = dirname($this->savedirpath).'/download';
                     //relative path
                     $relative_savepath = dirname($_SERVER['PHP_SELF']).'/download';
-                    
+                   
                     //whether exists download fold
                     if(is_dir($absolute_savepath)){
                         //absolute path
