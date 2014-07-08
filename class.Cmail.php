@@ -564,6 +564,7 @@ class Cmail{
             }
         }
         
+        
        
 //        if (isset($p->parts)) {
 //        foreach ($p->parts as $partno0=>$p2)
@@ -598,18 +599,12 @@ class Cmail{
      */
     public function sendEmail($configArray = array(),$person,$subject='',$body='',$file="") {
 
-        if(isset($configArray['smtpFrom'])){
-            $this->smtpFrom = $configArray['smtpFrom'];
-        }
+        if(isset($configArray['smtpFrom']))  $this->smtpFrom = $configArray['smtpFrom'];
         
-        if(isset($configArray['smtpHost'])){ 
-            $this->smtpHost = $configArray['smtpHost'];
-        }
+        if(isset($configArray['smtpHost']))  $this->smtpHost = $configArray['smtpHost'];
         
-        if(isset($configArray['smtpPort'])){
-            $this->smtpPort = $configArray['smtpPort'];
-        }
-        
+        if(isset($configArray['smtpPort']))  $this->smtpPort = $configArray['smtpPort'];
+    
         if(isset($configArray['smtpUsername'])){
             $this->smtpUsername = $configArray['smtpUsername'];
         }
@@ -687,6 +682,7 @@ class Cmail{
       
     public function deleteImapMail(){
         echo $this->imapHost;
+        echo "this is deleteImapMail function";
     }
     
     
