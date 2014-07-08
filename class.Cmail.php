@@ -640,6 +640,8 @@ class Cmail{
         $mime->_build_params['head_charset'] = "utf-8";
         $mime->setHTMLBody($body);
         
+        echo $file;
+        die();
         if($file <> ""){
             $mime->addAttachment($file, "text/html");
         }
