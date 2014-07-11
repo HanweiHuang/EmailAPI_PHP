@@ -19,9 +19,18 @@ class MailObject{
     
     protected $attachments=array();
     
+    protected $inlines = array();
+    
     protected $msgno;
     
     protected $date;
+    
+    public function setInlines($inlines = array()){
+        $this->inlines = $inlines;
+    }
+    public function getInlines(){
+        return $this->inlines; 
+    }
     
     public function getAttachments(){
         return $this->attachments;

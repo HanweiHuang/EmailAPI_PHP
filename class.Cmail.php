@@ -107,11 +107,12 @@ class Cmail{
     
     protected $attachements = array();
     
+    protected $inlines = array();
+    
     protected $is_attachment = false;
+    
+    protected $is_inline = false;
     ////////////////////////////
-    
-    
-    
    
     
     protected function edebug($str)
@@ -242,6 +243,11 @@ class Cmail{
                 foreach($emails as $emailnumber){
                     $email = new MailObject();
                     /////////////////////////
+                    
+                    $bodyText = imap_fetchbody($this->imapMailbox,$emailnumber,1);
+                    //var_dump($bodyText);
+                    
+                    
                     $structure = imap_fetchstructure($this->imapMailbox, $emailnumber);
                     //var_dump($structure);
                     
@@ -270,7 +276,11 @@ class Cmail{
                     }
                     
                     //set subject
-                    $email->setSubject(htmlspecialchars($overview[0]->subject));
+                    if(!isset($overview[0]->subject)){
+                        $email->setSubject('');
+                    }else{
+                        $email->setSubject(htmlspecialchars($overview[0]->subject));
+                    }
                     //set unread
                     $email->setUnread($this->unRead);
                     //set sender
@@ -290,6 +300,12 @@ class Cmail{
                         $this->is_attachment = false;
                         unset($this->attachements);
                     }
+                    //set inlines 
+                    if($this->is_inline == true){
+                        $email->setInlines($this->inlines);
+                        $this->is_inline = false;
+                        unset($this->inlines);
+                    }
                     //put oubject into list
                     //array_push($emailList, $email);
                     $emailList[$msgno] = $email;
@@ -302,8 +318,12 @@ class Cmail{
                     $i++;
                     $overview = imap_fetch_overview($this->imapMailbox,$emailnumber,0);
                     //var_dump($overview);
+                    //$header = imap_header($this->imapMailbox,$emailnumber);
+                    //var_dump($header);
+                    
+                    $mime = imap_fetchmime($this->imapMailbox, $emailnumber,1);
+                    //var_dump($mime);
                     $bodyText = imap_fetchbody($this->imapMailbox,$emailnumber,1);
-                    //var_dump($bodyText);
                     //$text = trim(utf8_encode(quoted_printable_decode(imap_fetchbody($this->imapMailbox, $emailnumber, 1)))); 
 
                     $structure = imap_fetchstructure($this->imapMailbox, $emailnumber);
@@ -341,7 +361,11 @@ class Cmail{
                     //////////////////////////////////////////////////////
                     
                     //setsubject
-                    $email->setSubject(htmlspecialchars($overview[0]->subject));
+                    if(!isset($overview[0]->subject)){
+                        $email->setSubject('');
+                    }else{
+                        $email->setSubject(htmlspecialchars($overview[0]->subject));
+                    }
                     //setunread
                     $email->setUnread($this->unRead);
                     //set sender
@@ -362,6 +386,13 @@ class Cmail{
                         $this->is_attachment = false;
                          unset($this->attachements);
                     }
+                    
+                    //set inlines 
+                    if($this->is_inline == true){
+                        $email->setInlines($this->inlines);
+                        $this->is_inline = false;
+                        unset($this->inlines);
+                    }
                     //put object into list
                     array_push($emailList, $email);
                     //make sure display the number of emails under requirement
@@ -376,6 +407,31 @@ class Cmail{
         return $emailList;
     }
    
+    public function getInlineDate($absoult_savedirpath,$relative_savepath=null,$part,$mailbox,$mailnumber,$partno){
+        $absoult_savedirpath = str_replace('\\', '/', $absoult_savedirpath);
+        if(substr($absoult_savedirpath, strlen($absoult_savedirpath)-1) !='/'){
+            $absoult_savedirpath .='/';
+        }
+        if($relative_savepath){
+            $relative_savepath = str_replace('\\', '/', $relative_savepath);
+            if(substr($relative_savepath, strlen($relative_savepath)-1) !='/'){
+                $relative_savepath .='/';
+            }
+        }
+        
+        $filename=$part->dparameters[1]->value;
+        
+        $this->inlines[$filename] = $relative_savepath;
+        
+        $mege = imap_fetchbody($mailbox,$mailnumber,$partno);
+        $fp=fopen($absoult_savedirpath.$filename,'w');
+        $data=$this->getdecodevalue($mege,$part->encoding);
+        //echo $part->type;
+        
+        fputs($fp,$data);
+        fclose($fp);
+    } 
+    
     /**
      * record the final filename which will not to be the same with the exist files
      * @var type 
@@ -487,6 +543,7 @@ class Cmail{
     }
     
     protected function getPart($imapMailbox,$emailnumber,$p,$partno,$uid=0){
+        var_dump($p);
         if($partno==0){
            $data = imap_body($imapMailbox,$emailnumber);
            $data = $this->getdecodevalue($data, $p->encoding);
@@ -509,7 +566,7 @@ class Cmail{
                     $absolute_savepath = dirname($this->savedirpath).'/download';
                     //relative path
                     $relative_savepath = dirname($_SERVER['PHP_SELF']).'/download';
-                   
+                    
                     //whether exists download fold
                     if(is_dir($absolute_savepath)){
                         //absolute path
@@ -543,6 +600,41 @@ class Cmail{
                         chmod($absolute_savepath, $mode=0777);
                         $this->getAttachDate($absolute_savepath,$relative_savepath,$p,$imapMailbox,$emailnumber,$partno);    
                     }
+                }
+                
+                else if(isset($p->disposition) && strtolower($p->disposition)=='inline'){
+                    $this->is_inline = true;
+//                    $data = imap_fetchbody($imapMailbox,$emailnumber,$partno);
+//                    $data = base64_decode($data);
+                    
+                    //save for absolute path
+                    $absolute_savepath = dirname($this->savedirpath).'/inline';
+                    //get for relative path
+                    $relative_savepath = dirname($_SERVER['PHP_SELF']).'/inline';
+                    
+                    if(is_dir($absolute_savepath)){
+                        $absolute_savepath = $absolute_savepath.'/'.$uid.$this->imapUsername.'/';
+                        //relative path
+                        $relative_savepath = $relative_savepath.'/'.$uid.$this->imapUsername.'/';
+                        
+                        if(is_dir($absolute_savepath)){
+                            $this->getInlineDate($absolute_savepath,$relative_savepath,$p,$imapMailbox,$emailnumber,$partno);
+                        }
+                        else{
+                            mkdir($absolute_savepath,$mode=0777);
+                            chmod($absolute_savepath, $mode=0777);
+                            $this->getInlineDate($absolute_savepath,$relative_savepath,$p,$imapMailbox,$emailnumber,$partno);    
+                        }
+                    }else{
+                        mkdir($absolute_savepath,$mode=0777);
+                        chmod($absolute_savepath,$mode=0777);
+                        $absolute_savepath = $absolute_savepath.'/'.$uid.$this->imapUsername;
+                        $relative_savepath = $relative_savepath.'/'.$uid.$this->imapUsername;
+                        mkdir($absolute_savepath,$mode=0777);
+                        chmod($absolute_savepath, $mode=0777);
+                        $this->getInlineDate($absolute_savepath,$relative_savepath,$p,$imapMailbox,$emailnumber,$partno);    
+                    }
+                    
                 }
                 else{
                     if(strtolower($p->subtype) == 'plain'){
@@ -594,6 +686,8 @@ class Cmail{
 //            $attachments[$filename] = $data;  // this is a problem if two files have same name
 //        }
     }
+    
+    
     /**
      * send email
      */

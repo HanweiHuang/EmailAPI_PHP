@@ -45,7 +45,7 @@ class Cmysql{
     
     function mysql_query_result($sql){
         if($this->conn == '') $this->init_conn();
-        $this->result = @mysql_query($sql,$this->conn);
+        $this->result = mysql_query($sql,$this->conn);
         $this->query_count++;
     }
     
@@ -75,7 +75,7 @@ class Cmysql{
                 return '';
         }
     }
-    
+    //get rows array
     function getRowsArray($sql,$type=MYSQL_BOTH){
     !empty($this->rowsArray) ? $this->rowsArray=array() : '';
         $this->mysql_query_result($sql);
@@ -94,8 +94,8 @@ class Cmysql{
         if($this->conn == ''){
            $this->init_conn();
         }
-        @mysql_query($sql);
-        $this->rowsNum = @mysql_affected_rows();
+        var_dump(mysql_query($sql));
+        $this->rowsNum = mysql_affected_rows();
         if(mysql_errno() == 0){
                 return $this->rowsNum;
         }else{
