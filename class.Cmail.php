@@ -419,8 +419,11 @@ class Cmail{
             }
         }
         
-        $filename=$part->dparameters[1]->value;
-        
+        //$filename=$part->dparameters[1]->value;
+        $filename = $part->id;
+        $filename = str_replace('<', '', $filename);
+        $filename = str_replace('>', '', $filename);
+                    
         $this->inlines[$filename] = $relative_savepath;
         
         $mege = imap_fetchbody($mailbox,$mailnumber,$partno);

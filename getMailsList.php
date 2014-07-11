@@ -38,7 +38,28 @@ else{
         $date = $email->getDate();
         $unread = $email->getUnread();
         
-        echo $content = $email->getMessage();       
+        echo $content = $email->getMessage();      
+        
+        
+        preg_match_all('/src="cid:(.*)"/Uims', $content, $matches);
+        
+        var_dump($matches);
+        
+        
+    if(count($matches)) {
+    $search = array();
+    $replace = array();
+    foreach($matches[1] as $match) {
+        //$uniqueFilename = "A UNIQUE_FILENAME.extension";
+        //file_put_contents("/path/to/images/$uniqueFilename", $emailMessage->attachments[$match]['data']);
+        $search[] = "src=\"cid:$match\"";
+        $replace[] = "src=\"http://localhost/emailAPI/inline/4075wei2215038@gmail.com/$match\"";
+    }
+    $content = str_replace($search, $replace, $content);
+    }
+    echo $content;
+        
+        die();
         //$content = mysql_real_escape_string($content);
         $subject = $email->getSubject();
         $attachments = $email->getAttachments();
