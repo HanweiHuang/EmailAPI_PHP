@@ -129,6 +129,15 @@ class Cmysql{
         }
     }
     
+    function returnRstIdPDO(){
+        if($this->conn == ''){
+            $this->init_connPDO();
+        }
+        $result = $db->exec("INSERT INTO table(firstname, lastname) VAULES('John', 'Doe')");
+        $insertId = $db->lastInsertId();
+    }
+    
+    
     function msg_error(){
         if(mysql_errno() != 0) {
             $this->msg = mysql_error();

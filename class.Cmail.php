@@ -546,7 +546,7 @@ class Cmail{
     }
     
     protected function getPart($imapMailbox,$emailnumber,$p,$partno,$uid=0){
-        var_dump($p);
+        //var_dump($p);
         if($partno==0){
            $data = imap_body($imapMailbox,$emailnumber);
            $data = $this->getdecodevalue($data, $p->encoding);

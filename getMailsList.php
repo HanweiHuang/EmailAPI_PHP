@@ -23,9 +23,9 @@ $list = $c->getEmailList(
             'imapPassword'=>'sally19870627'
         ),
         array(
-            'numRecords'=>1,
+            'numRecords'=>10,
             'unRead'=>false,
-            'senderEmail'=>'claire@performance.edu.au'
+            //'senderEmail'=>'service@seek.com.au'
         )
         );
 
@@ -38,28 +38,34 @@ else{
         $date = $email->getDate();
         $unread = $email->getUnread();
         
-        echo $content = $email->getMessage();      
+        $content = $email->getMessage();      
         
         
         preg_match_all('/src="cid:(.*)"/Uims', $content, $matches);
         
-        var_dump($matches);
+        //var_dump($matches);
         
+         if(!empty($email->getInlines())){
+            $inlines = $email->getInlines();
+            $inlinearray = array();
+            foreach($inlines as $key=>$inline){
+                $inlinearray[$key] = $inline.$key;
+            }
+        }
         
-    if(count($matches)) {
-    $search = array();
-    $replace = array();
-    foreach($matches[1] as $match) {
-        //$uniqueFilename = "A UNIQUE_FILENAME.extension";
-        //file_put_contents("/path/to/images/$uniqueFilename", $emailMessage->attachments[$match]['data']);
-        $search[] = "src=\"cid:$match\"";
-        $replace[] = "src=\"http://localhost/emailAPI/inline/4075wei2215038@gmail.com/$match\"";
-    }
-    $content = str_replace($search, $replace, $content);
-    }
-    echo $content;
-        
-        die();
+        if(count($matches)) {
+        $search = array();
+        $replace = array();
+        foreach($matches[1] as $match) {
+            //$uniqueFilename = "A UNIQUE_FILENAME.extension";
+            //file_put_contents("/path/to/images/$uniqueFilename", $emailMessage->attachments[$match]['data']);
+            $search[] = "src=\"cid:$match\"";
+            $replace[] = "src=\"$inline"."\\"."$match\"";
+        }
+        $content = str_replace($search, $replace, $content);
+        }
+        echo $content;
+       
         //$content = mysql_real_escape_string($content);
         $subject = $email->getSubject();
         $attachments = $email->getAttachments();
@@ -72,17 +78,12 @@ else{
         
 
         //$attachment_path='';\
-        if(!empty($email->getInlines())){
-            $inlines = $email->getInlines();
-            $inlinearray = array();
-            foreach($inlines as $key=>$inline){
-                $inlinearray[$key] = $inline.$key;
-            }
-        }
+       
         
-        
-        
+         
+        //$content = addslashes($content);
         //add to database;
+        $content = mysql_real_escape_string($content);
         var_dump($db->addMailFromImap($uid,$content,$subject,$date,$sender,$unread,$attachment_path));
         
         
