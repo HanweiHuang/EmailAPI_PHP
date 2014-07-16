@@ -181,11 +181,23 @@ class CPDO {
             if($mode === 2){
                 $this->query("insert into $table set $set");
                 $return = $this->lastInsertId();
-            }else if(){
-                
+            }else if($mode === 1){
+                $this->exec("insert into $table set $set");
+                $return = $this->result;
+            }else{
+                $this->query("insert into $table set $set");
+                $return = null;
+            }
+            return $return;
+        }else{
+            echo "insert into $table set $set";
+            if($debug === 2){
+                exit;
             }
         }
     }
+    
+    
     
 //    function getRowsNumPDO($sql){
 //        $stmt = $this->conn->query($sql);
